@@ -1,7 +1,7 @@
 function Paragraph() { 
     this.lines = [];
     this.currentLine = 0;
-    this.$paragraph = $('<div>');
+    this.$paragraph = $('<div>').attr('class','paragraph');
     this.createLine();
 }
 
@@ -20,6 +20,10 @@ Paragraph.prototype = {
     writeToLine: function(line, text) { 
         this.lines[line]._setText(text);
     },
+    rerenderParagraph: function() { 
+    },
+    rerenderLinesAfter: function(line) {
+    },
     removeChr: function(line, index) { 
         if(line >= this.lines.length) {
             throw "Paragraph does not have that line";
@@ -32,10 +36,34 @@ Paragraph.prototype = {
             console.log('todo: deal with combining paragraphs');
             return;
         }
-        this.lines[line].removeChr(index);
+        var deficit = this.lines[line].removeChr(index);
+        if(this.lines.length > line + 1) {
+            var line_i = line;
+            var slice = this.lines[line_i+1].sliceFromFront(deficit);
+            while(slice != "") { 
+                this.lines[line_i].appendTextAndRerender(slice);
+                this.lines[line_i+1].renderText();
+                if( this.lines.length <= line_i+2) break;
+                deficit = this.lines[line_i+1].calculateDeficit();
+                slice = this.lines[line_i+2].sliceFromFront(deficit);
+                line_i++;
+            }
+
+            //Clear out any empty lines at end
+            this.clearTrailingBlankLines();
+        }
+        
         return { 
             line: line,
             index: index-1
+        }
+    },
+    clearTrailingBlankLines: function() { 
+        line_i = this.lines.length-1;
+        while(this.lines[line_i].text == "") {
+            this.lines[line_i].destory();
+            this.lines.splice(this.lines.length-1,1);
+            line_i--;
         }
     },
     addChr: function(line,index, chr) {

@@ -22,6 +22,9 @@ Line.strWidth = function(str) {
     return width;
 }
 Line.prototype = {
+    destory: function() { 
+        this.$line.remove();
+    },
     appendTo: function($el) { 
         this.$line.appendTo($el);
     },
@@ -67,9 +70,31 @@ Line.prototype = {
         this.text = text.slice(0,index-1);
         this.text +=  text.slice(index,text.length)
         this.renderText();
+        return this.calculateDeficit();
+    },
+    calculateDeficit: function() { 
+        var lineWidth = this.$line.width()-this.paddingRight;
+        var textWidth = Line.strWidth(this.text);
+        return lineWidth-textWidth;
     },
     _setText: function(text) { 
         this.text = text; 
         this.$text.text(text);
+    },
+    appendTextAndRerender: function(text) {
+        this.text += text;
+        this.renderText();
+    },
+    sliceFromFront: function(width) { 
+        var slice = "";
+        var sliceWidth = 0;
+        var i = 0;
+        while(i < this.text.length && Line.strWidth(this.text[i])+sliceWidth < width) {
+            slice += this.text[i];
+            sliceWidth += Line.strWidth(this.text[i]);
+            i++;
+        }
+        this.text = this.text.slice(slice.length, this.text.length);
+        return slice;
     }
 }
