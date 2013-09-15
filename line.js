@@ -41,7 +41,7 @@ Line.prototype = {
         textHtml = textHtml.replace(/ /g, "&nbsp;");
         this.$text.html(textHtml);
     },
-    spliceOverflow: function() { 
+    getOverflow: function() { 
         var lineWidth = this.$line.width()-this.paddingRight;
         var textWidth = Line.strWidth(this.text);
         var overflow = "";
@@ -52,7 +52,12 @@ Line.prototype = {
             i--;
             console.log(overflow);
         }
+        return overflow;
+    },
+    spliceOverflow: function() { 
+        var overflow = this.getOverflow();
         this.text = this.text.slice(0, this.text.length-overflow.length);
+        this.renderText();
         return overflow;
     },
 
