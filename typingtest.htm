@@ -5,6 +5,9 @@
         <script src="underscore.js"></script>
         <script src="line.js"></script>
         <script src="paragraph.js"></script>
+        <script src="cursor.js"></script>
+        <script src="keypress.js"></script>
+        <script src="note.js"></script>
         <style>
             * {
                 font-family: Tahoma, Geneva, sans-serif;
@@ -21,8 +24,6 @@
         </style>
     </head>
     <body>
-        <div id="cursor"></div>
-        <div><span id="input"></span></div>
         <script>
             var $input = $('#input');
             var $cursor = $('#cursor');
@@ -48,7 +49,7 @@
                 $input.html(_.escape(inputStringStart)+chr+_.escape(inputStringEnd));
             }
             $(document).keypress(function(e) {
-                console.log(e);
+                return;
                 if(e.keyCode == 32) {
                     chr = "&nbsp;";
                 }
@@ -60,7 +61,7 @@
                 updateCursorLocation();
             });
             $(document).keydown(function(e) { 
-                console.log(e);
+                return;
                 if( e.keyCode == 8 ) {
                     var inputString = $input.text();
                     var inputStringStart = inputString.slice(0,cursorIndex-1);
@@ -85,13 +86,18 @@
                     $input = $('<span>').appendTo($div);
                 }
             });
-            x = new Paragraph();
-            x.createLine();
-            x.createLine();
-            x.writeToLine(0, " hayden");
-            x.writeToLine(1, " is");
-            x.writeToLine(2, " awesome");
-            x.appendTo($('body'));
+            new KeyPress();
+            new Cursor();
+            $(document).on('charInput', function(e, chr) {
+                console.log(chr);
+            });
+            $(document).on('backspace', function(e) {
+                console.log('backspace');
+            });
+            $(document).on('down', function(e) {
+                console.log('down');
+            });
+            x = new Note($('body'));
 
             function timeCheckCharWidth(str) { 
                 var start = new Date();

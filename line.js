@@ -25,6 +25,13 @@ Line.prototype = {
     appendTo: function($el) { 
         this.$line.appendTo($el);
     },
+    fromTop: function() { 
+        return this.$line.position().top;
+    },
+    widthToIndex: function(index) { 
+        var temp = this.text.slice(0, index);
+        return Line.strWidth(temp);
+    },
     renderText: function() { 
         var textHtml = this.text;
         textHtml = _.escape(textHtml);
@@ -40,6 +47,7 @@ Line.prototype = {
             overflow = this.text[i] + overflow;
             textWidth -= Line.strWidth(this.text[i]);
             i--;
+            console.log(overflow);
         }
         this.text = this.text.slice(0, this.text.length-overflow.length);
         return overflow;
@@ -50,8 +58,9 @@ Line.prototype = {
         this.text = text.slice(0,index);
         this.text += chr;
         this.text +=  text.slice(index,text.length)
+        var pos = this.spliceOverflow();
         this.renderText();
-        return this.spliceOverflow();
+        return pos;
     },
     removeChr: function(index) {
         var text = this.text;
