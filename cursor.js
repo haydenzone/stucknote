@@ -22,26 +22,27 @@ Cursor.prototype = {
         var line = par.lines[this.line];
         var pos = { 
             left: line.widthToIndex(this.index),
-            top: line.fromTop()+par.fromTop()
+            top: line.fromTop()
         }
         this.$cursor.css(pos);
     },
     move: function(code) {
         switch(code) { 
-            case Cursor.UP:
+            case 'up':
                 this.line--;
                 //todo: bound check
                 break;
-            case Cursor.DOWN:
+            case 'down':
                 this.line++;
                 break;
-            case Cursor.LEFT:
+            case 'left':
                 this.index--;
                 break;
-            case Cursor.RIGHT:
+            case 'right':
                 this.index++;
                 break;
         }
+        return this;
 
     }
 }

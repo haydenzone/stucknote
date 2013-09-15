@@ -58,9 +58,9 @@ Line.prototype = {
         this.text = text.slice(0,index);
         this.text += chr;
         this.text +=  text.slice(index,text.length)
-        var pos = this.spliceOverflow();
+        var overflow = this.spliceOverflow();
         this.renderText();
-        return pos;
+        return overflow;
     },
     removeChr: function(index) {
         var text = this.text;

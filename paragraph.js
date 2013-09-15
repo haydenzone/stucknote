@@ -20,6 +20,24 @@ Paragraph.prototype = {
     writeToLine: function(line, text) { 
         this.lines[line]._setText(text);
     },
+    removeChr: function(line, index) { 
+        if(line >= this.lines.length) {
+            throw "Paragraph does not have that line";
+        }
+        if( index == 0 ) {
+            line--;
+            index = this.lines[line].text.length;
+        }
+        if(line < 0) { 
+            console.log('todo: deal with combining paragraphs');
+            return;
+        }
+        this.lines[line].removeChr(index);
+        return { 
+            line: line,
+            index: index-1
+        }
+    },
     addChr: function(line,index, chr) {
         if(line >= this.lines.length) {
             throw "Paragraph does not have that line";
