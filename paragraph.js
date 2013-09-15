@@ -24,7 +24,6 @@ Paragraph.prototype = {
         var deficit = 0;
         for(var i = 0; i < this.lines.length; i++) {
             deficit = this.lines[i].calculateDeficit();
-            debugger;
             if(deficit > 0) { 
                 i = this.pullbackLinesAfter(i);
             } else if (deficit < 0) {
@@ -39,6 +38,14 @@ Paragraph.prototype = {
             var slice = this.lines[line_i+1].sliceFromFront(deficit);
             while(slice != "") { 
                 this.lines[line_i].appendTextAndRerender(slice);
+                while(this.lines[line_i].calculateDeficit() > 0 && this.lines[line_i+1].text.length == 0) {
+                    var deficit = this.lines[line_i].calculateDeficit();
+                    this.removeLine(line_i+1);
+                    if(line_i + 1 >= this.lines.length) break;
+                    slice = this.lines[line_i+1].sliceFromFront(deficit);
+                    this.lines[line_i].appendTextAndRerender(slice);
+                }
+                if( this.lines.length <= line_i+1) break;
                 this.lines[line_i+1].renderText();
                 if( this.lines.length <= line_i+2) break;
                 deficit = this.lines[line_i+1].calculateDeficit();
@@ -85,11 +92,14 @@ Paragraph.prototype = {
             index: index-1
         }
     },
+    removeLine: function(line_i) { 
+        this.lines[line_i].destory();
+        this.lines.splice(line_i,1);
+    },
     clearTrailingBlankLines: function() { 
         line_i = this.lines.length-1;
         while(this.lines[line_i].text == "") {
-            this.lines[line_i].destory();
-            this.lines.splice(this.lines.length-1,1);
+            this.removeLine(line_i);
             line_i--;
         }
     },
