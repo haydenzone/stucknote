@@ -61,9 +61,8 @@ Line.prototype = {
         this.text = text.slice(0,index);
         this.text += chr;
         this.text +=  text.slice(index,text.length)
-        var overflow = this.spliceOverflow();
         this.renderText();
-        return overflow;
+        return;
     },
     removeChr: function(index) {
         var text = this.text;

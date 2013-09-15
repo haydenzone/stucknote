@@ -22,7 +22,23 @@ Paragraph.prototype = {
     },
     rerenderParagraph: function() { 
     },
-    rerenderLinesAfter: function(line) {
+    pullbackLinesAfter: function(line) {
+        var deficit = this.lines[line].calculateDeficit();
+        if(this.lines.length > line + 1) {
+            var line_i = line;
+            var slice = this.lines[line_i+1].sliceFromFront(deficit);
+            while(slice != "") { 
+                this.lines[line_i].appendTextAndRerender(slice);
+                this.lines[line_i+1].renderText();
+                if( this.lines.length <= line_i+2) break;
+                deficit = this.lines[line_i+1].calculateDeficit();
+                slice = this.lines[line_i+2].sliceFromFront(deficit);
+                line_i++;
+            }
+
+        }
+    },
+    pushforwardLinesAfter: function(line) {
     },
     removeChr: function(line, index) { 
         if(line >= this.lines.length) {
@@ -36,22 +52,10 @@ Paragraph.prototype = {
             console.log('todo: deal with combining paragraphs');
             return;
         }
-        var deficit = this.lines[line].removeChr(index);
-        if(this.lines.length > line + 1) {
-            var line_i = line;
-            var slice = this.lines[line_i+1].sliceFromFront(deficit);
-            while(slice != "") { 
-                this.lines[line_i].appendTextAndRerender(slice);
-                this.lines[line_i+1].renderText();
-                if( this.lines.length <= line_i+2) break;
-                deficit = this.lines[line_i+1].calculateDeficit();
-                slice = this.lines[line_i+2].sliceFromFront(deficit);
-                line_i++;
-            }
-
-            //Clear out any empty lines at end
-            this.clearTrailingBlankLines();
-        }
+        this.lines[line].removeChr(index);
+        this.pullbackLinesAfter(line);
+        //Clear out any empty lines at end
+        this.clearTrailingBlankLines();
         
         return { 
             line: line,
@@ -74,16 +78,13 @@ Paragraph.prototype = {
         if(this.lines[line].text.length == index) {
             endOfLine = true;
         }
-        var overflow = chr;
+        this.lines[line].addChr(chr,index);
         var pos = {
             index: index+1,
             line: line
         };
         do {
-            if(line >= this.lines.length) {
-                this.createLine();
-            }
-            overflow = this.lines[line].addChr(overflow,index);
+            overflow = this.lines[line].spliceOverflow();
             if(overflow != "" && endOfLine) {
                 pos.index = overflow.length;
                 pos.line = line+1;
@@ -91,6 +92,12 @@ Paragraph.prototype = {
             }
             index = 0;
             line++;
+            if(overflow != "") {
+                if(line >= this.lines.length) {
+                    this.createLine();
+                }
+                this.lines[line].addChr(overflow,index);
+            }
         } while(overflow != "");
         return pos;
     }
