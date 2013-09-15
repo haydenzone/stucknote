@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+    <head>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="underscore.js"></script>
+        <script src="line.js"></script>
+        <script src="paragraph.js"></script>
+        <style>
+            * {
+                font-family: Tahoma, Geneva, sans-serif;
+            }
+            body { 
+                background-color:#8FD8D8;
+            }
+            #cursor { 
+                width: 2px;
+                height: 18px;
+                background-color: black;
+                position: absolute;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="cursor"></div>
+        <div><span id="input"></span></div>
+        <script>
+            var $input = $('#input');
+            var $cursor = $('#cursor');
+            var cursorIndex = 0;
+            var $fakediv = $('<div>').appendTo($('body'));
+            $fakeinput = $('<span>').appendTo($fakediv).css('visibility','hidden');
+            function updateCursorLocation() { 
+                var cutString = $input.text().slice(0,cursorIndex);
+                $fakeinput.html(cutString);
+                var position = $fakeinput.offset();
+                var left = position.left + $fakeinput.width();
+                position = $input.offset().top;
+                $cursor.css({
+                    'left':left,
+                    'top': position
+                });
+                
+            }
+            function appendChar(chr) { 
+                var inputString = _.unescape($input.text());
+                var inputStringStart = inputString.slice(0,cursorIndex);
+                var inputStringEnd = inputString.slice(cursorIndex,inputString.length)
+                $input.html(_.escape(inputStringStart)+chr+_.escape(inputStringEnd));
+            }
+            $(document).keypress(function(e) {
+                console.log(e);
+                if(e.keyCode == 32) {
+                    chr = "&nbsp;";
+                }
+                else {
+                    chr = _.escape(String.fromCharCode(e.keyCode));
+                }
+                appendChar(chr);
+                cursorIndex++;
+                updateCursorLocation();
+            });
+            $(document).keydown(function(e) { 
+                console.log(e);
+                if( e.keyCode == 8 ) {
+                    var inputString = $input.text();
+                    var inputStringStart = inputString.slice(0,cursorIndex-1);
+                    var inputStringEnd = inputString.slice(cursorIndex,inputString.length)
+                    $input.html(inputStringStart+inputStringEnd);
+                    cursorIndex--;
+                    updateCursorLocation();
+                }
+                if(e.keyCode==39) {
+                    cursorIndex++;
+                    updateCursorLocation();
+                }
+                if(e.keyCode == 37) { 
+                    cursorIndex--;
+                    updateCursorLocation();
+                } 
+
+                if(e.keyCode == 13) { 
+                    cursorIndex = 0;
+                    var $div = $('<div>');
+                    $fakeinput.before($div);
+                    $input = $('<span>').appendTo($div);
+                }
+            });
+            x = new Paragraph();
+            x.createLine();
+            x.createLine();
+            x.writeToLine(0, " hayden");
+            x.writeToLine(1, " is");
+            x.writeToLine(2, " awesome");
+            x.appendTo($('body'));
+
+            function timeCheckCharWidth(str) { 
+                var start = new Date();
+                checkCharToWidth(str);
+                var end = new Date();
+                console.log('milliseconds', end.getMilliseconds() - start.getMilliseconds());
+            }
+            function checkCharToWidth(str) { 
+                var indLength = 0;
+                _.each(str, function(chr) { 
+                    indLength += Line.strWidth(chr);
+                });
+                var wholeLength = Line.strWidth(str);
+                if(wholeLength != indLength) {
+                    console.log(indLength);
+                    console.log(wholeLength);
+                    throw "chrToWidth failed on "+str;
+                }
+            }
+        </script>
+    </body>
+</html>
