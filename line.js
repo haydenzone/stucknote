@@ -41,21 +41,32 @@ Line.prototype = {
         textHtml = textHtml.replace(/ /g, "&nbsp;");
         this.$text.html(textHtml);
     },
-    getOverflow: function() { 
+    getOverflow: function(forwardScan) { 
+        if(!forwardScan) forwardScan = false;
         var lineWidth = this.$line.width()-this.paddingRight;
-        var textWidth = Line.strWidth(this.text);
         var overflow = "";
-        var i = this.text.length - 1;
-        while(textWidth > lineWidth && i >= 0) {
-            overflow = this.text[i] + overflow;
-            textWidth -= Line.strWidth(this.text[i]);
-            i--;
-            console.log(overflow);
+        if(forwardScan) { 
+            var textWidth = 0;
+            var i = 0;
+            while(textWidth + Line.strWidth(this.text[i]) < lineWidth && i < this.text.length) {
+                textWidth += Line.strWidth(this.text[i]);
+                i++;
+            }
+            overflow = this.text.slice(i,this.text.length);
+        } else { //backward scan
+            var textWidth = Line.strWidth(this.text);
+            var i = this.text.length - 1;
+            while(textWidth > lineWidth && i >= 0) {
+                overflow = this.text[i] + overflow;
+                textWidth -= Line.strWidth(this.text[i]);
+                i--;
+            }
         }
         return overflow;
     },
-    spliceOverflow: function() { 
-        var overflow = this.getOverflow();
+    spliceOverflow: function(forwardScan) { 
+        if(!forwardScan) forwardScan = false;
+        var overflow = this.getOverflow(forwardScan);
         this.text = this.text.slice(0, this.text.length-overflow.length);
         this.renderText();
         return overflow;

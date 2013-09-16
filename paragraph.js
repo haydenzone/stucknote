@@ -20,6 +20,10 @@ Paragraph.prototype = {
     writeToLine: function(line, text) { 
         this.lines[line]._setText(text);
     },
+    appendText: function(text) { 
+        this.lines[this.lines.length-1].text += text;
+        this.pushforwardLinesAfter(this.lines.length-1,true);
+    },
     rerenderParagraph: function() { 
         var deficit = 0;
         for(var i = 0; i < this.lines.length; i++) {
@@ -56,10 +60,11 @@ Paragraph.prototype = {
         }
         return line_i;
     },
-    pushforwardLinesAfter: function(line) {
+    pushforwardLinesAfter: function(line,forwardScan) {
+        if(!forwardScan) forwardScan = false;
         var overflow = "";
         do {
-            overflow = this.lines[line].spliceOverflow();
+            overflow = this.lines[line].spliceOverflow(forwardScan);
             line++;
             if(overflow != "") {
                 if(line >= this.lines.length) {

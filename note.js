@@ -30,6 +30,13 @@ Note.prototype = {
     curParagraph: function() { 
         return this.paragraphs[this.currentParagraph];
     },
+    rerender: function() { 
+        this.cursor.saveAbsolutePosition();
+        _.each(this.paragraphs, function(p) { 
+            p.rerenderParagraph();
+        });
+        this.cursor.reloadFromAbsolutePosition().render();
+    },
     charInput: function(e, chr) { 
         var curPar = this.paragraphs[this.currentParagraph];
         var newPos = curPar.addChr(this.cursor.line, this.cursor.index,chr);
