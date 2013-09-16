@@ -52,20 +52,71 @@ Cursor.prototype = {
         }
         this.$cursor.css(pos);
     },
+    moveCursorToLine: function(endLine_i, endPar) { 
+        var par = this.note.curParagraph();
+        if(!endPar) endPar = par;
+        var startLine = par.lines[this.line];
+        var endLine = endPar.lines[endLine_i];
+        var width = startLine.widthToIndex(this.index);
+        this.index = endLine.closestIndex(width);
+        this.line = endLine_i;
+    },
+    moveUp: function() { 
+        if(this.line == 0) {
+            var parAbove = this.note.parAbove();
+            if(parAbove) {
+                this.moveCursorToLine(parAbove.lines.length-1, parAbove);
+                this.note.setCurParagraph(this.note.currentParagraph-1);
+            }
+        } else {
+            this.moveCursorToLine(this.line-1);
+        }
+    },
+    moveDown: function() {
+        var curPar = this.note.curParagraph();
+        if(this.line == curPar.lines.length-1) {
+            var parBelow = this.note.parBelow();
+            if(parBelow) {
+                this.moveCursorToLine(0, parBelow);
+                this.note.setCurParagraph(this.note.currentParagraph+1);
+            }
+        } else {
+            this.moveCursorToLine(this.line+1);
+        }
+    },
     move: function(code) {
         switch(code) { 
             case 'up':
-                this.line--;
-                //todo: bound check
+                this.moveUp();
                 break;
             case 'down':
-                this.line++;
+                this.moveDown();
                 break;
             case 'left':
-                this.index--;
+                if(this.index != 0) {
+                    this.index--;
+                } else if(this.line > 0) {
+                    var par = this.note.curParagraph();
+                    var line = par.lines[this.line-1];
+                    this.index = line.text.length;
+                    this.line--;
+                } else if(!this.note.isFirstParagraph()) {
+                    var tempindex = this.note.parAbove().lastLine().text.length-1;
+                    tempindex++;
+                    this.moveUp();
+                    this.index = tempindex;
+                }
                 break;
             case 'right':
-                this.index++;
+                var par = this.note.curParagraph();
+                var line = par.lines[this.line];
+                if(this.index < line.text.length) {
+                    this.index++;
+                } else if(!this.note.isLastParagraph() ||
+                    this.line < par.lines.length-1) {
+                    this.index = 0;
+                    this.moveDown();
+                }
                 break;
         }
         return this;

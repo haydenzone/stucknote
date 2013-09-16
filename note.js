@@ -30,6 +30,29 @@ Note.prototype = {
     curParagraph: function() { 
         return this.paragraphs[this.currentParagraph];
     },
+    parBelow: function() { 
+        if(this.currentParagraph != this.paragraphs.length-1) {
+            return this.paragraphs[this.currentParagraph+1];
+        } else {
+            return null;
+        }
+    },
+    parAbove: function() { 
+        if(this.currentParagraph != 0) {
+            return this.paragraphs[this.currentParagraph-1];
+        } else {
+            return null;
+        }
+    },
+    setCurParagraph: function(i) { 
+        this.currentParagraph = i;
+    },
+    isFirstParagraph: function() { 
+        return this.currentParagraph == 0;
+    },
+    isLastParagraph: function() { 
+        return this.paragraphs.length-1 == this.currentParagraph;
+    },
     rerender: function() { 
         this.cursor.saveAbsolutePosition();
         _.each(this.paragraphs, function(p) { 
@@ -44,9 +67,33 @@ Note.prototype = {
     },
     backspace: function(e) { 
         var curPar = this.paragraphs[this.currentParagraph];
-        var newPos = curPar.removeChr(this.cursor.line, this.cursor.index);
-        this.cursor.setPosition(newPos).render();
+        //Check if deleting at front of paragraph
+        if(this.cursor.line == 0 && this.cursor.index == 0 ) {
+            if(this.currentParagraph == 0) {
+                return;
+            }
+            var parAbove = this.parAbove();
+            var newPos = { 
+                line: parAbove.lines.length-1,
+                index: parAbove.lines[parAbove.lines.length-1].text.length
+            };
+            var parCur = this.curParagraph();
+            _.each(parCur.lines, function(line) { 
+                parAbove.appendLine(line)
+            });
+            parAbove.rerenderParagraph();
+            this.removeParagraph(this.currentParagraph);
+            this.currentParagraph--;
+            this.cursor.setPosition(newPos).render();
+        } else {
+            var newPos = curPar.removeChr(this.cursor.line, this.cursor.index);
+            this.cursor.setPosition(newPos).render();
+        }
 
+    },
+    removeParagraph: function(index) { 
+        this.paragraphs[index].destroy();
+        this.paragraphs.splice(index,1);
     },
     arrow: function(e, direction) { 
         this.cursor.move(direction).render();

@@ -35,6 +35,22 @@ Line.prototype = {
         var temp = this.text.slice(0, index);
         return Line.strWidth(temp);
     },
+    closestIndex: function(width) { 
+        var widthToHere = 0;
+        for(var i = 0; i < this.text.length; i++) { 
+            var chr = this.text[i];
+            var charWidth = Line.strWidth(chr);
+            if( widthToHere + charWidth > width ) { 
+                if( Math.abs( widthToHere - width) > Math.abs( widthToHere +charWidth -width) ) {
+                    return i+1;
+                } else {
+                    return i;
+                }
+            }
+            widthToHere += charWidth;
+        }
+        return i;
+    },
     renderText: function() { 
         var textHtml = this.text;
         textHtml = _.escape(textHtml);

@@ -1,13 +1,13 @@
 function KeyPress() { 
     $(document).keypress(function(e) { 
-        var keyCode = e.keyCode;
+        var keyCode = e.which;
         if( keyCode >= 32 && keyCode < 126 ) {
             var chr = String.fromCharCode(keyCode);
             $(document).trigger('charInput',[chr]);
         }
     });
     $(document).keydown(function(e) { 
-        var keyCode = e.keyCode;
+        var keyCode = e.which;
         var direction = '';
         switch(keyCode) {
             case 8:

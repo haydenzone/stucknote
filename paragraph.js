@@ -6,8 +6,18 @@ function Paragraph() {
 }
 
 Paragraph.prototype = { 
+    destroy: function() { 
+        this.$paragraph.remove();
+        this.lines = [];
+    },
     createLine: function () { 
         var line = new Line();
+        this.appendLine(line);
+    },
+    lastLine: function() { 
+        return this.lines[this.lines.length-1];
+    },
+    appendLine: function(line) { 
         this.lines.push(line);
         line.appendTo(this.$paragraph);
     },
@@ -103,7 +113,7 @@ Paragraph.prototype = {
     },
     clearTrailingBlankLines: function() { 
         line_i = this.lines.length-1;
-        while(this.lines[line_i].text == "") {
+        while(this.lines[line_i].text == "" && line_i > 0) {
             this.removeLine(line_i);
             line_i--;
         }
