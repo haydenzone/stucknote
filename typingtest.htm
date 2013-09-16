@@ -30,6 +30,7 @@
     </head>
     <body>
         <script>
+            debugging = false;
             var $input = $('#input');
             var $cursor = $('#cursor');
             var cursorIndex = 0;
@@ -93,15 +94,6 @@
             });
             new KeyPress();
             new Cursor();
-            $(document).on('charInput', function(e, chr) {
-                console.log(chr);
-            });
-            $(document).on('backspace', function(e) {
-                console.log('backspace');
-            });
-            $(document).on('down', function(e) {
-                console.log('down');
-            });
             x = new Note($('body'));
 
             function timeCheckCharWidth(str) { 

@@ -4,6 +4,7 @@ function KeyPress() {
         if( keyCode >= 32 && keyCode < 126 ) {
             var chr = String.fromCharCode(keyCode);
             $(document).trigger('charInput',[chr]);
+            if(debugging) keylog.push(['charInput',chr]);
         }
     });
     $(document).keydown(function(e) { 
@@ -12,6 +13,7 @@ function KeyPress() {
         switch(keyCode) {
             case 8:
                 $(document).trigger('backspace');
+                if(debugging) keylog.push(['backspace']);
                 break;
             case 40:
                 direction = 'down';
@@ -27,10 +29,12 @@ function KeyPress() {
                 break;
             case 13:
                 $(document).trigger('enter');
+                if(debugging) keylog.push(['enter']);
                 break;
         }
         if(direction != "") {
             $(document).trigger('arrow',[direction]);
+            if(debugging) keylog.push(['arrow',direction]);
         }
 
     });

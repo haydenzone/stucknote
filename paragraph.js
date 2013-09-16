@@ -100,7 +100,7 @@ Paragraph.prototype = {
         this.lines[line].removeChr(index);
         this.pullbackLinesAfter(line);
         //Clear out any empty lines at end
-        this.clearTrailingBlankLines();
+        this._clearTrailingBlankLines(line);
         
         return { 
             line: line,
@@ -111,9 +111,9 @@ Paragraph.prototype = {
         this.lines[line_i].destory();
         this.lines.splice(line_i,1);
     },
-    clearTrailingBlankLines: function() { 
+    _clearTrailingBlankLines: function(line) { 
         line_i = this.lines.length-1;
-        while(this.lines[line_i].text == "" && line_i > 0) {
+        while(this.lines[line_i].text == "" && line_i > line) {
             this.removeLine(line_i);
             line_i--;
         }
