@@ -4,6 +4,15 @@ function Cursor(note) {
     this.index = 0;
     this.note = note;
     this.absolutePosition = 0;
+    var lastTime = this.index;
+    setInterval(function() { 
+        if(this.index == lastTime) { 
+            this.$cursor.toggle(); 
+        } else {
+            this.$cursor.show();
+        }
+        lastTime =this.index;
+    }.bind(this),700);
 }
 Cursor.UP = 0;
 Cursor.DOWN = 1;
