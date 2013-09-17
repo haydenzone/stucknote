@@ -77,6 +77,10 @@ Note.prototype = {
                 line: parAbove.lines.length-1,
                 index: parAbove.lines[parAbove.lines.length-1].text.length
             };
+            this.currentParagraph--;
+            this.cursor.setPosition(newPos);
+            this.cursor.saveAbsolutePosition();
+            this.currentParagraph++;
             var parCur = this.curParagraph();
             _.each(parCur.lines, function(line) { 
                 parAbove.appendLine(line)
@@ -84,7 +88,8 @@ Note.prototype = {
             parAbove.rerenderParagraph();
             this.removeParagraph(this.currentParagraph);
             this.currentParagraph--;
-            this.cursor.setPosition(newPos).render();
+            this.cursor.reloadFromAbsolutePosition();
+            this.cursor.render();
         } else {
             var newPos = curPar.removeChr(this.cursor.line, this.cursor.index);
             this.cursor.setPosition(newPos).render();
@@ -100,6 +105,15 @@ Note.prototype = {
     },
     enter: function(e) { 
         this.createParagraph();
+        var parBelow = this.parBelow();
+        if(!this.cursor.endOfLine()) { 
+            var restOfLine = this.cursor.cutTextAfter();
+            parBelow.writeToLine(0,restOfLine);
+        }
+        var curLines = this.curParagraph().lines;
+        _.each(curLines.splice(this.cursor.line+1,curLines.length-this.cursor.line), function(line) { 
+            parBelow.appendLine(line)
+        });
         this.currentParagraph++;
         this.cursor.setPosition({
             line: 0,

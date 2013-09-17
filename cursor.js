@@ -4,14 +4,16 @@ function Cursor(note) {
     this.index = 0;
     this.note = note;
     this.absolutePosition = 0;
-    var lastTime = this.index;
+    var lastIndex = this.index;
+    var lastLine = this.line;
     setInterval(function() { 
-        if(this.index == lastTime) { 
+        if(this.index == lastIndex && this.line == lastLine ) { 
             this.$cursor.toggle(); 
         } else {
             this.$cursor.show();
         }
-        lastTime =this.index;
+        lastIndex =this.index;
+        lastLine =this.line;
     }.bind(this),700);
 }
 Cursor.UP = 0;
@@ -32,7 +34,7 @@ Cursor.prototype = {
         var index = 0;
         var par = this.note.curParagraph();
         for( var i = 0; i < par.lines.length; i++ ) {
-            if ( this.absolutePosition - par.lines[i].text.length >= 0) {
+            if ( this.absolutePosition - par.lines[i].text.length > 0) {
                 this.absolutePosition -= par.lines[i].text.length;
             } else { 
                 index = this.absolutePosition;
@@ -52,14 +54,28 @@ Cursor.prototype = {
         }
         this.absolutePosition += this.index;
     },
+    endOfLine: function() { 
+        var par = this.note.curParagraph();
+        var line = par.lines[this.line];
+        return this.index == line.text.length;
+    },
+    cutTextAfter: function() { 
+        var par = this.note.curParagraph();
+        var line = par.lines[this.line];
+        var end = line.text.slice(this.index, line.text.length);
+        line.text = line.text.slice(0,this.index); 
+        line.renderText();
+        return end;
+    },
     render: function() { 
         var par = this.note.curParagraph();
         var line = par.lines[this.line];
+        if(_.isUndefined(line)) debugger;
         var pos = { 
             left: line.widthToIndex(this.index),
             top: line.fromTop()
         }
-        this.$cursor.css(pos);
+        this.$cursor.css(pos).show();
     },
     moveCursorToLine: function(endLine_i, endPar) { 
         var par = this.note.curParagraph();
