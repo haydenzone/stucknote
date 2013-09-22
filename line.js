@@ -1,8 +1,10 @@
-function Line() { 
+function Line(paragraph) { 
+    this.paragraph = paragraph;
     this.text = "";
-    this.$line = $('<div>');
+    this.$line = $('<div>').attr('class','line');
     this.$text = $('<span>').appendTo(this.$line);
     this.paddingRight = 5;
+    this.registerClickHandler();
 }
 Line.charWidthLookUp = {};
 Line.strWidth = function(str) {
@@ -24,6 +26,22 @@ Line.strWidth = function(str) {
 Line.prototype = {
     destory: function() { 
         this.$line.remove();
+    },
+    registerClickHandler: function() {
+        var self = this;
+        function getHandler(from) {
+            return function(e) { 
+                var hasOffset = e.originalEvent.hasOwnProperty('offsetX');
+                e.offsetX = hasOffset ? e.offsetX : e.originalEvent.layerX;
+                e.offsetY = hasOffset ? e.offsetY : e.originalEvent.layerY;
+                var index = this.closestIndex(e.offsetX);
+                this.paragraph.lineClicked(this,index,from); //I feel like there is a more correct way to do this
+            }.bind(self);
+        }
+        this.$line.mouseup(getHandler('up'));
+        this.$line.mousemove(getHandler('move'));
+        this.$line.mousedown(getHandler('down'));
+
     },
     appendTo: function($el) { 
         this.$line.appendTo($el);
@@ -93,14 +111,14 @@ Line.prototype = {
         this.text = text.slice(0,index);
         this.text += chr;
         this.text +=  text.slice(index,text.length)
-        this.renderText();
+            this.renderText();
         return;
     },
     removeChr: function(index) {
         var text = this.text;
         this.text = text.slice(0,index-1);
         this.text +=  text.slice(index,text.length)
-        this.renderText();
+            this.renderText();
         return this.calculateDeficit();
     },
     calculateDeficit: function() { 

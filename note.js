@@ -3,6 +3,15 @@ function Note($root) {
     this.$note.attr({
         'class': 'note'
     });
+    this.$copyHack = $('<input>').attr({
+        'type':'input',
+        'value':'blah'
+    }).css({
+        'height': 1,
+        'width': 1,
+        'position':'absolute',
+        'left': -20
+    }).appendTo($('body'));
     this.cursor = new Cursor(this);
     this.cursor.appendTo(this.$note);
     this.$note.css('position', 'relative');
@@ -10,9 +19,48 @@ function Note($root) {
     this.createParagraph();
     this.currentParagraph = 0;
     this.registerKeyboardListeners();
+    this.registerListeners();
+    this.selection = {};
+    this.clickStart = {}
 }
 
 Note.prototype = {
+    registerListeners: function() { 
+        this.$copyHack.bind('cut', function(e) {
+            console.log('cut');
+            e = e.originalEvent;
+            e.clipboardData.setData('Text', 'fuck yeah cutting');
+            
+            return false
+        });
+        this.$copyHack.bind('copy', function(e) {
+            e = e.originalEvent;
+            e.clipboardData.setData('Text', 'fuck yeah copying');
+            console.log('copy');
+            
+            return false
+        });
+        this.$copyHack.bind('paste', function(e) {
+            console.log('paste');
+            e = e.originalEvent;
+            var pastedText = undefined;
+            if (window.clipboardData && window.clipboardData.getData) { // IE
+                pastedText = window.clipboardData.getData('Text');
+            } else if (e.clipboardData && e.clipboardData.getData) {
+                pastedText = e.clipboardData.getData('text/plain');
+            }
+            console.log(pastedText); // Process and handle text...
+            console.log(this.selecting());
+            return false;
+        }.bind(this));
+        $(document).mousedown(function() { 
+            this.selection = {};
+        }.bind(this));
+
+    },
+    selecting: function() { 
+        return this.selection.hasOwnProperty('start');
+    },
     createParagraph: function() { 
         var par = new Paragraph();
         if(this.hasOwnProperty('currentParagraph')) {
@@ -26,6 +74,47 @@ Note.prototype = {
         } else {
             this.paragraphs[i-1].$paragraph.after(par.$paragraph)
         }
+        par.$paragraph.on("lineClicked", function(e, line, index,from) { 
+            if(from == "down") {
+                console.log('down');
+                this.clickStart = {
+                    line: line,
+                    index: index,
+                    par: par
+                };
+            } else if(from == "move") { 
+                if( !$.isEmptyObject(this.clickStart) &&(this.clickStart.line != line || this.clickStart.index != index || this.clickStart.par != par)) {
+                    console.log('selecting stuff!');
+
+                }
+            } else if(from == "up") { 
+                console.log('up');
+                console.log(this.clickStart);
+                if(this.clickStart.line == line && this.clickStart.index == index) {
+                    console.log('setting cursor position');
+                    this.setCurParagraph(this.paragraphs.indexOf(par));
+                    console.log(line,index);
+                    this.cursor.setPosition({
+                        line: line,
+                        index: index
+                    }).render();
+                } else { //finish selection
+                    console.log('finish selection');
+                    this.selection = {
+                        start: this.clickStart,
+                        end: {
+                            line: line,
+                            index: index,
+                            par: this.paragraphs.indexOf(par)
+                        }
+                    };
+                    console.log(this.selection);
+                    this.$copyHack[0].select();
+                }
+                this.clickStart = {};
+            } 
+        }.bind(this));
+
     },
     curParagraph: function() { 
         return this.paragraphs[this.currentParagraph];

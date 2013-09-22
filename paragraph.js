@@ -11,8 +11,12 @@ Paragraph.prototype = {
         this.lines = [];
     },
     createLine: function () { 
-        var line = new Line();
+        var line = new Line(this);
         this.appendLine(line);
+    },
+    lineClicked: function(line, index, from) { 
+        var line_i = this.lines.indexOf(line);
+        this.$paragraph.trigger("lineClicked", [line_i, index, from]);
     },
     lastLine: function() { 
         return this.lines[this.lines.length-1];
@@ -123,7 +127,7 @@ Paragraph.prototype = {
             throw "Paragraph does not have that line";
         }
         var endOfLine = false;
-        if(this.lines[line].text.length == index) {
+        if(this.lines[line].text.length <= index) {
             endOfLine = true;
         }
         this.lines[line].addChr(chr,index);
