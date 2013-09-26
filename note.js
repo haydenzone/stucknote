@@ -20,7 +20,7 @@ function Note($root) {
     this.currentParagraph = 0;
     this.registerKeyboardListeners();
     this.registerListeners();
-    this.selection = {};
+    this.selection = null;
     this.clickStart = {}
 }
 
@@ -50,16 +50,24 @@ Note.prototype = {
                 pastedText = e.clipboardData.getData('text/plain');
             }
             console.log(pastedText); // Process and handle text...
-            console.log(this.selecting());
             return false;
         }.bind(this));
         $(document).mousedown(function() { 
-            this.selection = {};
+            if(this.selecting()) {
+                this.clearSelection();
+            }
         }.bind(this));
 
     },
     selecting: function() { 
-        return this.selection.hasOwnProperty('start');
+        return !!this.selection;
+    },
+    clearSelection:function() {
+        this.selection.clearSelection();
+        this.selection = null;
+    },
+    sliceParagraphs: function(start, end) { 
+        return this.paragraphs.slice(start,end);
     },
     createParagraph: function() { 
         var par = new Paragraph();
@@ -80,35 +88,41 @@ Note.prototype = {
                 this.clickStart = {
                     line: line,
                     index: index,
-                    par: par
+                    par: par,
+                    parIndex: this.paragraphs.indexOf(par)
                 };
             } else if(from == "move") { 
                 if( !$.isEmptyObject(this.clickStart) &&(this.clickStart.line != line || this.clickStart.index != index || this.clickStart.par != par)) {
-                    console.log('selecting stuff!');
+                    if(!this.selecting()) {
+                        this.selection = new Selection({
+                            start: this.clickStart,
+                            end: {
+                                line: line,
+                                index: index,
+                                par: par,
+                                parIndex: this.paragraphs.indexOf(par)
+                            },
+                            note: this
+                        });
+                    } else { 
+                        this.selection.setEnd({
+                            line: line,
+                            index: index,
+                            par: par,
+                            parIndex: this.paragraphs.indexOf(par)
+                        });
+
+                    }
 
                 }
             } else if(from == "up") { 
-                console.log('up');
-                console.log(this.clickStart);
                 if(this.clickStart.line == line && this.clickStart.index == index) {
-                    console.log('setting cursor position');
                     this.setCurParagraph(this.paragraphs.indexOf(par));
-                    console.log(line,index);
                     this.cursor.setPosition({
                         line: line,
                         index: index
                     }).render();
                 } else { //finish selection
-                    console.log('finish selection');
-                    this.selection = {
-                        start: this.clickStart,
-                        end: {
-                            line: line,
-                            index: index,
-                            par: this.paragraphs.indexOf(par)
-                        }
-                    };
-                    console.log(this.selection);
                     this.$copyHack[0].select();
                 }
                 this.clickStart = {};

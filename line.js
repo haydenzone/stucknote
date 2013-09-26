@@ -5,6 +5,11 @@ function Line(paragraph) {
     this.$text = $('<span>').appendTo(this.$line);
     this.paddingRight = 5;
     this.registerClickHandler();
+    this.$highlight = null;
+    this.highlight = {
+        start: null,
+        end: null
+    }
 }
 Line.charWidthLookUp = {};
 Line.strWidth = function(str) {
@@ -42,6 +47,43 @@ Line.prototype = {
         this.$line.mousemove(getHandler('move'));
         this.$line.mousedown(getHandler('down'));
 
+    },
+    specs: function() { 
+        var specs = this.$text.position();
+        $.extend(specs, {
+            width: this.$text.height(),
+            height: this.$text.width()
+        });
+        return specs;
+    },
+    clearHighlight: function() {
+        this.$highlight.remove();
+        this.highlight.start = null;
+        this.highlight.end = null;
+        this.$highlight = null;
+    },
+    highlightRange: function(start, end) { 
+        if(!this.$highlight) {
+            this.$highlight = $('<div>').css({
+                'display':'inline-block',
+                'position':'absolute',
+                'height': this.$text.height(),
+                'pointer-events':'none'
+            }).attr('class','highlight').appendTo(this.$line);
+        }
+        if(this.highlight.start == start && this.highlight.end == end) return;
+        var left = this.widthToIndex(start);
+        this.$highlight.css({
+            'width':this.widthToIndex(end)-left
+        });
+
+        if(this.highlight.start == start) return;
+        this.$highlight.css({
+            'top':0,
+            'left': left
+        });
+        this.highlight.start = start;
+        this.highlight.end = end;
     },
     appendTo: function($el) { 
         this.$line.appendTo($el);

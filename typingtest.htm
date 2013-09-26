@@ -10,7 +10,7 @@
         <script src="cursor.js"></script>
         <script src="keypress.js"></script>
         <script src="note.js"></script>
-        <script src="cutopastey.js"></script>
+        <script src="selection.js"></script>
         <style>
             * {
                 font-family: Tahoma, Geneva, sans-serif;
@@ -26,6 +26,7 @@
             }
             .line {
                 min-height: 19px;
+                position:relative;
             }
             .note {
                 cursor: text;
@@ -35,6 +36,11 @@
                 -moz-user-select: none;
                 -ms-user-select: none;
                 user-select: none;
+            }
+            .highlight {
+                background-color: blue;
+                filter: alpha(opacity=50);
+                opacity: 0.5;
             }
         </style>
     </head>
@@ -104,7 +110,6 @@
             });
             new KeyPress();
             new Cursor();
-            new Cutopastey();
             x = new Note($('body'));
 
             function timeCheckCharWidth(str) { 
