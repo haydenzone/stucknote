@@ -34,12 +34,15 @@ Note.prototype = {
             return false
         });
         this.$copyHack.bind('copy', function(e) {
-            e = e.originalEvent;
-            e.clipboardData.setData('Text', 'fuck yeah copying');
             console.log('copy');
+            e = e.originalEvent;
+            if(this.selecting()) {
+                selection = this.selection.getSelection();
+                e.clipboardData.setData('Text', selection);
+            }
             
             return false
-        });
+        }.bind(this));
         this.$copyHack.bind('paste', function(e) {
             console.log('paste');
             e = e.originalEvent;
