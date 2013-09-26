@@ -10,6 +10,12 @@ Paragraph.prototype = {
         this.$paragraph.remove();
         this.lines = [];
     },
+    obliterate: function() { 
+        _.each(this.lines, function(line) { 
+            line.destory();
+        });
+        this.destroy();
+    },
     createLine: function () { 
         var line = new Line(this);
         this.appendLine(line);
@@ -54,7 +60,7 @@ Paragraph.prototype = {
         var line_i = line;
         if(this.lines.length > line + 1) {
             var slice = this.lines[line_i+1].sliceFromFront(deficit);
-            while(slice != "") { 
+            while(slice != "" || this.lines[line_i+1].text.length == 0) { 
                 this.lines[line_i].appendTextAndRerender(slice);
                 while(this.lines[line_i].calculateDeficit() > 0 && this.lines[line_i+1].text.length == 0) {
                     var deficit = this.lines[line_i].calculateDeficit();

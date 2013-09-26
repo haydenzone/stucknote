@@ -118,16 +118,22 @@ Note.prototype = {
                     }
 
                 }
-            } else if(from == "up") { 
-                if(this.clickStart.line == line && this.clickStart.index == index) {
+                if( !$.isEmptyObject(this.clickStart) ) { //Check if dragging
                     this.setCurParagraph(this.paragraphs.indexOf(par));
                     this.cursor.setPosition({
                         line: line,
                         index: index
                     }).render();
-                } else { //finish selection
-                    this.$copyHack[0].select();
                 }
+            } else if(from == "up") { 
+                if(this.clickStart.line != line || this.clickStart.index != index) {
+                    this.$copyHack[0].select(); //Finish selection
+                }
+                this.setCurParagraph(this.paragraphs.indexOf(par));
+                this.cursor.setPosition({
+                    line: line,
+                    index: index
+                }).render();
                 this.clickStart = {};
             } 
         }.bind(this));
@@ -173,6 +179,14 @@ Note.prototype = {
     },
     backspace: function(e) { 
         var curPar = this.paragraphs[this.currentParagraph];
+        if(this.selecting()) { 
+            var start = this.selection.orderBoundaries()[0];
+            this.cursor.setPosition(start).render();
+            this.selection.clearSelection();
+            this.selection.deleteSelection();
+            this.selection = null;
+            return;
+        }
         //Check if deleting at front of paragraph
         if(this.cursor.line == 0 && this.cursor.index == 0 ) {
             if(this.currentParagraph == 0) {

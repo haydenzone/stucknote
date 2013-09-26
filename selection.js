@@ -9,8 +9,56 @@ Selection.prototype = {
         this.end = end;
         this.rerender();
     },
+    orderBoundaries: function() {
+        var start = this.start;
+        var end = this.end;
+        if(end.parIndex < start.parIndex || 
+                (end.parIndex == start.parIndex && end.line < start.line) ||
+                (end.parIndex == start.parIndex && end.line == start.line && end.index < start.index) ) {
+            var temp = start;
+            start = end;
+            end = temp;
+        }
+        return [start, end]
+    },
+    deleteSelection: function() { 
+        var r = this.orderBoundaries();
+        var start = r[0];
+        var end = r[1];
+
+        var paragraphs = this.note.sliceParagraphs(start.parIndex, end.parIndex+1);
+        var pIndex = start.parIndex;
+        _.each(paragraphs, function(p) { 
+            if(pIndex == start.parIndex && pIndex == end.parIndex) {
+                if(start.line == end.line) {
+                    p.lines[start.line].removeRange(start.index, end.index);
+                    p.lines[start.line].renderText();
+                } else { 
+                    for(var i = start.line; i < end.line+1; i++) { 
+                        var line = p.lines[i];
+                        if(i == start.line) {
+                            line.removeRange(start.index, line.text.length);
+                        } else if( i == end.line ) { 
+                            line.removeRange(0, end.index);
+                        } else {
+                            line.removeRange(0, line.text.length);
+                        }
+                        line.renderText();
+                    }
+                }
+            } else if(pIndex == start.parIndex) { 
+                //lines = lines.concat(p.lines.slice(start.line,p.lines.length));
+            } else if(pIndex == end.parIndex) { 
+                //lines = lines.concat(p.lines.slice(0,end.line+1));
+            } else {
+                //lines = lines.concat(p.lines);
+            }
+            p.rerenderParagraph();
+            pIndex++;
+        });
+    },
     getSelection: function() { 
-        var r = this.linesInRange(this.start,this.end, true);
+        var r = this.linesInRange(true);
         var text = "";
         var i = 0;
         var start = r[1];
@@ -40,19 +88,15 @@ Selection.prototype = {
 
     },
     clearSelection: function() { 
-        var r = this.linesInRange(this.start,this.end, false);
+        var r = this.linesInRange(false);
         _.each(r[0], function(line) { 
             line.clearHighlight();
         });
     },
-    linesInRange: function(start, end, lastFlag) {
-        if(end.parIndex < start.parIndex || 
-                (end.parIndex == start.parIndex && end.line < start.line) ||
-                (end.parIndex == start.parIndex && end.line == start.line && end.index < start.index) ) {
-            var temp = start;
-            start = end;
-            end = temp;
-        }
+    linesInRange: function(lastFlag) {
+        var r = this.orderBoundaries();
+        var start = r[0];
+        var end = r[1];
         var paragraphs = this.note.sliceParagraphs(start.parIndex, end.parIndex+1);
         var pIndex = start.parIndex;
         var lines = [];
@@ -74,7 +118,7 @@ Selection.prototype = {
         return [lines, start, end];
     },
     rerender: function() {
-        var results = this.linesInRange(this.start,this.end, false);
+        var results = this.linesInRange(false);
         var lines = results[0];
         var start = results[1];
         var end = results[2]

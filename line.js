@@ -56,6 +56,11 @@ Line.prototype = {
         });
         return specs;
     },
+    removeRange: function(start,end) {
+        var text = this.text;
+        this.text = text.slice(0,start);
+        this.text += text.slice(end,text.length);
+    },
     clearHighlight: function() {
         this.$highlight.remove();
         this.highlight.start = null;
