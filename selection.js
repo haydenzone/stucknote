@@ -6,8 +6,55 @@ function Selection(args) {
 
 Selection.prototype = { 
     setEnd: function(end) { 
+        var r = this.orderBoundaries();
+        var prevStart = r[0];
+        var prevEnd = r[1];
         this.end = end;
+        r = this.orderBoundaries();
+        var curStart = r[0];
+        var curEnd = r[1];
+        if(this.boundaryLessThan(prevStart,curStart)) { 
+            this.clearLines(this.linesInRange(false, {
+                start: prevStart,
+                end: curStart
+            })[0].slice(0,-1));
+        }
+        if(this.boundaryGreaterThan(prevEnd,curEnd)) {
+            this.clearLines(this.linesInRange(false,{
+                start: curEnd,
+                end: prevEnd
+            })[0].slice(1));
+        }
         this.rerender();
+    },
+    clearLines: function(lines) { 
+        _.each(lines, function(line) { 
+            line.clearHighlight();
+        });
+    },
+    boundaryGreaterThan: function(x,y) { 
+        if(x.parIndex > y.parIndex || 
+                (x.parIndex == y.parIndex && x.line > y.line) ||
+                (x.parIndex == y.parIndex && x.line == y.line && x.index > y.index) ) {
+            if(x.parIndex == y.parIndex && x.line == y.line && x.index == y.index) {
+                return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    },
+    boundaryLessThan: function(x,y) { 
+        if(x.parIndex < y.parIndex || 
+                (x.parIndex == y.parIndex && x.line < y.line) ||
+                (x.parIndex == y.parIndex && x.line == y.line && x.index < y.index) ) {
+            if(x.parIndex == y.parIndex && x.line == y.line && x.index == y.index) {
+                return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
     },
     orderBoundaries: function() {
         var start = this.start;
@@ -58,7 +105,7 @@ Selection.prototype = {
         });
     },
     getSelection: function() { 
-        var r = this.linesInRange(true);
+        var r = this.linesInRange(true, {});
         var text = "";
         var i = 0;
         var start = r[1];
@@ -88,15 +135,15 @@ Selection.prototype = {
 
     },
     clearSelection: function() { 
-        var r = this.linesInRange(false);
+        var r = this.linesInRange(false,{});
         _.each(r[0], function(line) { 
             line.clearHighlight();
         });
     },
-    linesInRange: function(lastFlag) {
+    linesInRange: function(lastFlag, args) {
         var r = this.orderBoundaries();
-        var start = r[0];
-        var end = r[1];
+        var start = args.start || r[0];
+        var end = args.end || r[1];
         var paragraphs = this.note.sliceParagraphs(start.parIndex, end.parIndex+1);
         var pIndex = start.parIndex;
         var lines = [];
@@ -118,7 +165,7 @@ Selection.prototype = {
         return [lines, start, end];
     },
     rerender: function() {
-        var results = this.linesInRange(false);
+        var results = this.linesInRange(false,{});
         var lines = results[0];
         var start = results[1];
         var end = results[2]
