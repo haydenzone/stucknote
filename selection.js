@@ -94,15 +94,55 @@ Selection.prototype = {
                     }
                 }
             } else if(pIndex == start.parIndex) { 
-                //lines = lines.concat(p.lines.slice(start.line,p.lines.length));
+                for(var i = start.line; i < p.lines.length; i++) { 
+                    var line = p.lines[i];
+                    if(i == start.line) {
+                        line.removeRange(start.index, line.text.length);
+                    } else {
+                        line.removeRange(0, line.text.length);
+                    }
+                    line.renderText();
+                }
             } else if(pIndex == end.parIndex) { 
-                //lines = lines.concat(p.lines.slice(0,end.line+1));
+                for(var i = 0; i < end.line+1; i++) { 
+                    var line = p.lines[i];
+                    if(i == end.line) {
+                        line.removeRange(0, end.index);
+                    } else {
+                        line.removeRange(0, line.text.length);
+                    }
+                    line.renderText();
+                }
             } else {
-                //lines = lines.concat(p.lines);
+                p.destroy();
             }
             p.rerenderParagraph();
             pIndex++;
         });
+        var pIndex = start.parIndex;
+        var paragraphsToRemove = _.map(paragraphs, function(p) { 
+            pIndex++;
+            if(p.lines.length == 0) { 
+                return pIndex-1;
+            } else {
+                return -1;
+            }
+        });
+        console.log(paragraphsToRemove);
+        _.each(paragraphsToRemove.reverse(), function(p) { 
+            if(p != -1) {
+                this.note.paragraphs.splice(p,1);
+            }
+        }.bind(this));
+        if(paragraphs.length > 1) { 
+            var firstPar = paragraphs.slice(0,1)[0];
+            var lastPar = paragraphs.slice(-1)[0];
+            _.each(lastPar.lines, function(line) { 
+                firstPar.appendLine(line);
+            });
+            firstPar.rerenderParagraph();
+            this.note.removeParagraph(this.note.paragraphs.indexOf(lastPar));
+        }
     },
     getSelection: function() { 
         var r = this.linesInRange(true, {});
