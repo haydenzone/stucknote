@@ -29,10 +29,14 @@ Note.prototype = {
         this.$copyHack.bind('cut', function(e) {
             console.log('cut');
             e = e.originalEvent;
-            e.clipboardData.setData('Text', 'fuck yeah cutting');
+            if(this.selecting()) { 
+                var text = this.selection.getSelection();
+                this.deleteSelection();
+                e.clipboardData.setData('Text', text);
+            }
             
             return false
-        });
+        }.bind(this));
         this.$copyHack.bind('copy', function(e) {
             console.log('copy');
             e = e.originalEvent;
@@ -43,7 +47,7 @@ Note.prototype = {
             
             return false
         }.bind(this));
-        this.$copyHack.bind('paste', function(e) {
+        $(document).bind('paste', function(e) {
             console.log('paste');
             e = e.originalEvent;
             var pastedText = undefined;
@@ -64,6 +68,14 @@ Note.prototype = {
     },
     selecting: function() { 
         return !!this.selection;
+    },
+    deleteSelection: function() { 
+        var start = this.selection.orderBoundaries()[0];
+        this.cursor.setPosition(start).render();
+        this.selection.clearSelection();
+        this.selection.deleteSelection();
+        this.selection = null;
+        return;
     },
     clearSelection:function() {
         this.selection.clearSelection();
@@ -180,11 +192,7 @@ Note.prototype = {
     backspace: function(e) { 
         var curPar = this.paragraphs[this.currentParagraph];
         if(this.selecting()) { 
-            var start = this.selection.orderBoundaries()[0];
-            this.cursor.setPosition(start).render();
-            this.selection.clearSelection();
-            this.selection.deleteSelection();
-            this.selection = null;
+            this.deleteSelection();
             return;
         }
         //Check if deleting at front of paragraph

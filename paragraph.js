@@ -29,6 +29,7 @@ Paragraph.prototype = {
     },
     appendLine: function(line) { 
         this.lines.push(line);
+        line.paragraph = this;
         line.appendTo(this.$paragraph);
     },
     fromTop: function() { 
