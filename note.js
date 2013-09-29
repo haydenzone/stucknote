@@ -71,7 +71,9 @@ Note.prototype = {
     },
     deleteSelection: function() { 
         var start = this.selection.orderBoundaries()[0];
-        this.cursor.setPosition(start).render();
+        this.setCurParagraph(start.parIndex);
+        this.cursor.setPosition(start);
+        this.cursor.render();
         this.selection.clearSelection();
         this.selection.deleteSelection();
         this.selection = null;
@@ -185,6 +187,9 @@ Note.prototype = {
         this.cursor.reloadFromAbsolutePosition().render();
     },
     charInput: function(e, chr) { 
+        if(this.selecting()) { 
+            this.deleteSelection();
+        }
         var curPar = this.paragraphs[this.currentParagraph];
         var newPos = curPar.addChr(this.cursor.line, this.cursor.index,chr);
         this.cursor.setPosition(newPos).render();
@@ -229,9 +234,32 @@ Note.prototype = {
         this.paragraphs.splice(index,1);
     },
     arrow: function(e, direction) { 
+        var prevPos = null
+        if(keyPress.shift && !this.selecting()) { 
+            prevPos = this.cursor.getPosition();
+        }
         this.cursor.move(direction).render();
+        if(!this.selecting() && keyPress.shift) {
+            this.selection = new Selection({
+                start: prevPos,
+                end: this.cursor.getPosition(),
+                note: this
+            });
+            this.selection.rerender();
+            return;
+        } 
+       if(this.selecting()) { 
+            if(keyPress.shift) { 
+                this.selection.setEnd(this.cursor.getPosition());
+            } else { 
+                this.clearSelection();
+            }
+        }
     },
     enter: function(e) { 
+        if(this.selecting()) { 
+            this.deleteSelection();
+        }
         this.createParagraph();
         var parBelow = this.parBelow();
         if(!this.cursor.endOfLine()) { 

@@ -26,6 +26,14 @@ Cursor.prototype = {
         this.index = pos.index;
         return this;
     },
+    getPosition: function() { 
+        return { 
+            parIndex: this.note.paragraphs.indexOf(this.note.curParagraph()),
+            line: this.line,
+            index: this.index,
+            par: this.note.curParagraph()
+        };
+    },
     appendTo: function($el) {
         this.$cursor.appendTo($el);
     },
