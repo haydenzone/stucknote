@@ -1,0 +1,28 @@
+* {
+    font-family: Tahoma, Geneva, sans-serif;
+}
+#cursor { 
+    width: 2px;
+    height: 18px;
+    background-color: black;
+    position: absolute;
+}
+.line {
+    min-height: 19px;
+    position:relative;
+}
+.note {
+    background-color:#8FD8D8;
+    cursor: text;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.highlight {
+    background-color: blue;
+    filter: alpha(opacity=50);
+    opacity: 0.5;
+}

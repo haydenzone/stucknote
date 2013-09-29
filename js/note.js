@@ -14,7 +14,6 @@ function Note($root) {
     }).appendTo($('body'));
     this.cursor = new Cursor(this);
     this.cursor.appendTo(this.$note);
-    this.$note.css('position', 'relative');
     this.paragraphs = [];
     this.createParagraph();
     this.currentParagraph = 0;
@@ -47,24 +46,23 @@ Note.prototype = {
             
             return false
         }.bind(this));
-        $(document).bind('paste', function(e) {
-            console.log('paste');
-            e = e.originalEvent;
-            var pastedText = undefined;
-            if (window.clipboardData && window.clipboardData.getData) { // IE
-                pastedText = window.clipboardData.getData('Text');
-            } else if (e.clipboardData && e.clipboardData.getData) {
-                pastedText = e.clipboardData.getData('text/plain');
-            }
-            console.log(pastedText); // Process and handle text...
-            return false;
-        }.bind(this));
-        $(document).mousedown(function() { 
-            if(this.selecting()) {
-                this.clearSelection();
-            }
-        }.bind(this));
-
+    },
+    mousedown: function() { 
+        if(this.selecting()) {
+            this.clearSelection();
+        }
+    },
+    paste: function(e) {
+        console.log('paste');
+        e = e.originalEvent;
+        var pastedText = undefined;
+        if (window.clipboardData && window.clipboardData.getData) { // IE
+            pastedText = window.clipboardData.getData('Text');
+        } else if (e.clipboardData && e.clipboardData.getData) {
+            pastedText = e.clipboardData.getData('text/plain');
+        }
+        console.log(pastedText); // Process and handle text...
+        return false;
     },
     selecting: function() { 
         return !!this.selection;
@@ -277,9 +275,22 @@ Note.prototype = {
         }).render();
     },
     registerKeyboardListeners: function() { 
-        $(document).on('charInput', this.charInput.bind(this));
-        $(document).on('backspace', this.backspace.bind(this));
-        $(document).on('arrow', this.arrow.bind(this));
-        $(document).on('enter', this.enter.bind(this));
+        var events = ['charInput', 'backspace', 'arrow', 'enter','paste','mousedown'];
+        if(!this.hasOwnProperty('events')) { 
+            this.events = {};
+            _.each(events, function(e) { 
+                this.events[e] = this[e].bind(this)
+            }.bind(this));
+            
+        }
+        _.each(this.events, function(callback, eName) { 
+            $(document).on(eName, callback);
+        });
+    },
+
+    unregisterKeyboardListeners: function() { 
+        _.each(this.events, function(callback, eName) { 
+            $(document).off(eName, callback);
+        });
     }
 }

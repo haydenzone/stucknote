@@ -80,7 +80,7 @@ Cursor.prototype = {
         var line = par.lines[this.line];
         if(_.isUndefined(line)) debugger;
         var pos = { 
-            left: line.widthToIndex(this.index),
+            left: line.widthToIndex(this.index)+line.$line.position().left,
             top: line.fromTop()
         }
         this.$cursor.css(pos).show();

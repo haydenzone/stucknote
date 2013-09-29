@@ -4,132 +4,24 @@
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
         <meta content="utf-8" http-equiv="encoding">
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-        <script src="underscore.js"></script>
-        <script src="line.js"></script>
-        <script src="paragraph.js"></script>
-        <script src="cursor.js"></script>
-        <script src="keypress.js"></script>
-        <script src="note.js"></script>
-        <script src="selection.js"></script>
+        <script src="js/underscore.js"></script>
+        <script src="js/line.js"></script>
+        <script src="js/paragraph.js"></script>
+        <script src="js/cursor.js"></script>
+        <script src="js/keypress.js"></script>
+        <script src="js/note.js"></script>
+        <script src="js/selection.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/note.css">
+        <link rel="stylesheet" type="text/css" href="style.css">
         <style>
-            * {
-                font-family: Tahoma, Geneva, sans-serif;
-            }
-            body { 
-                background-color:#8FD8D8;
-            }
-            #cursor { 
-                width: 2px;
-                height: 18px;
-                background-color: black;
-                position: absolute;
-            }
-            .line {
-                min-height: 19px;
-                position:relative;
-            }
-            .note {
-                cursor: text;
-                -webkit-touch-callout: none;
-                -webkit-user-select: none;
-                -khtml-user-select: none;
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
-            }
-            .highlight {
-                background-color: blue;
-                filter: alpha(opacity=50);
-                opacity: 0.5;
-            }
         </style>
     </head>
     <body>
         <script>
             debugging = false;
-            var $input = $('#input');
-            var $cursor = $('#cursor');
-            var cursorIndex = 0;
-            var $fakediv = $('<div>').appendTo($('body'));
-            $fakeinput = $('<span>').appendTo($fakediv).css('visibility','hidden');
-            function updateCursorLocation() { 
-                var cutString = $input.text().slice(0,cursorIndex);
-                $fakeinput.html(cutString);
-                var position = $fakeinput.offset();
-                var left = position.left + $fakeinput.width();
-                position = $input.offset().top;
-                $cursor.css({
-                    'left':left,
-                    'top': position
-                });
-                
-            }
-            function appendChar(chr) { 
-                var inputString = _.unescape($input.text());
-                var inputStringStart = inputString.slice(0,cursorIndex);
-                var inputStringEnd = inputString.slice(cursorIndex,inputString.length)
-                $input.html(_.escape(inputStringStart)+chr+_.escape(inputStringEnd));
-            }
-            $(document).keypress(function(e) {
-                return;
-                if(e.keyCode == 32) {
-                    chr = "&nbsp;";
-                }
-                else {
-                    chr = _.escape(String.fromCharCode(e.keyCode));
-                }
-                appendChar(chr);
-                cursorIndex++;
-                updateCursorLocation();
-            });
-            $(document).keydown(function(e) { 
-                return;
-                if( e.keyCode == 8 ) {
-                    var inputString = $input.text();
-                    var inputStringStart = inputString.slice(0,cursorIndex-1);
-                    var inputStringEnd = inputString.slice(cursorIndex,inputString.length)
-                    $input.html(inputStringStart+inputStringEnd);
-                    cursorIndex--;
-                    updateCursorLocation();
-                }
-                if(e.keyCode==39) {
-                    cursorIndex++;
-                    updateCursorLocation();
-                }
-                if(e.keyCode == 37) { 
-                    cursorIndex--;
-                    updateCursorLocation();
-                } 
-
-                if(e.keyCode == 13) { 
-                    cursorIndex = 0;
-                    var $div = $('<div>');
-                    $fakeinput.before($div);
-                    $input = $('<span>').appendTo($div);
-                }
-            });
             var keyPress = new KeyPress();
             new Cursor();
             x = new Note($('body'));
-
-            function timeCheckCharWidth(str) { 
-                var start = new Date();
-                checkCharToWidth(str);
-                var end = new Date();
-                console.log('milliseconds', end.getMilliseconds() - start.getMilliseconds());
-            }
-            function checkCharToWidth(str) { 
-                var indLength = 0;
-                _.each(str, function(chr) { 
-                    indLength += Line.strWidth(chr);
-                });
-                var wholeLength = Line.strWidth(str);
-                if(wholeLength != indLength) {
-                    console.log(indLength);
-                    console.log(wholeLength);
-                    throw "chrToWidth failed on "+str;
-                }
-            }
         </script>
     </body>
 </html>
