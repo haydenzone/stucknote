@@ -1,7 +1,14 @@
 function Note($root) { 
     this.$note = $('<div>').appendTo($root);
+    this.$note.append($("<div>").css({
+    }).attr('class','handle'));
     this.$note.attr({
         'class': 'note'
+    });
+    this.$note.draggable({
+        handle: 'div.handle'
+    }).resizable({
+        resize: this.rerender.bind(this)
     });
     this.$copyHack = $('<input>').attr({
         'type':'input',
