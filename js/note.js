@@ -1,12 +1,18 @@
-function Note($root) { 
+function Note($root,keypress) { 
     this.$note = $('<div>').appendTo($root);
+    this.keyPress = keypress;
     this.$note.append($("<div>").css({
     }).attr('class','handle'));
     this.$note.attr({
         'class': 'note'
     });
+    this.clickCb = null;
     this.$note.draggable({
-        handle: 'div.handle'
+        handle: 'div.handle',
+        start: function() { 
+            console.log('calling callbacks');
+            if(this.clickCb) this.clickCb();
+        }.bind(this)
     }).resizable({
         resize: this.rerender.bind(this)
     });
@@ -31,6 +37,17 @@ function Note($root) {
 }
 
 Note.prototype = {
+    zindex: function(z) { 
+        this.$note.css('z-index', z);
+    },
+    click: function(cb) { 
+        if(this.clickCb) throw('Currently only 1 click callback supported');
+        this.clickCb = cb;
+        this.$note.click(cb);
+    },
+    toggleCursor: function(show) { 
+        this.cursor.toggle(show);
+    },
     registerListeners: function() { 
         this.$copyHack.bind('cut', function(e) {
             console.log('cut');
@@ -240,11 +257,11 @@ Note.prototype = {
     },
     arrow: function(e, direction) { 
         var prevPos = null
-        if(keyPress.shift && !this.selecting()) { 
+        if(this.keyPress.shift && !this.selecting()) { 
             prevPos = this.cursor.getPosition();
         }
         this.cursor.move(direction).render();
-        if(!this.selecting() && keyPress.shift) {
+        if(!this.selecting() && this.keyPress.shift) {
             this.selection = new Selection({
                 start: prevPos,
                 end: this.cursor.getPosition(),
@@ -254,7 +271,7 @@ Note.prototype = {
             return;
         } 
        if(this.selecting()) { 
-            if(keyPress.shift) { 
+            if(this.keyPress.shift) { 
                 this.selection.setEnd(this.cursor.getPosition());
             } else { 
                 this.clearSelection();

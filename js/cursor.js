@@ -6,7 +6,9 @@ function Cursor(note) {
     this.absolutePosition = 0;
     var lastIndex = this.index;
     var lastLine = this.line;
+    this.visible = true;
     setInterval(function() { 
+        if(!this.visible) return;
         if(this.index == lastIndex && this.line == lastLine ) { 
             this.$cursor.toggle(); 
         } else {
@@ -21,6 +23,10 @@ Cursor.DOWN = 1;
 Cursor.LEFT = 2;
 Cursor.RIGHT = 3;
 Cursor.prototype = { 
+    toggle: function(show) {
+        this.$cursor.toggle(show);
+        this.visible = show;
+    },
     setPosition: function(pos) {
         this.line = pos.line;
         this.index = pos.index;
