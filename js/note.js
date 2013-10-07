@@ -1,20 +1,31 @@
-function Note($root,keypress) { 
-    this.$note = $('<div>').appendTo($root);
-    this.keyPress = keypress;
+function Note(args) { 
+    this.$note = $('<div>').appendTo(args.$root);
+    this.keyPress = args.keyPress;
+    var paragraphs = args.paragraphs || null;
+    var uid = args.uid || Note.getUID();
+    var style = args.style || {};
+    this.css(style);
     this.$note.append($("<div>").css({
     }).attr('class','handle'));
     this.$note.attr({
         'class': 'note'
     });
     this.clickCb = null;
+    this._modified = true
+    this._textModified = true;
     this.$note.draggable({
         handle: 'div.handle',
         start: function() { 
-            console.log('calling callbacks');
             if(this.clickCb) this.clickCb();
+        }.bind(this),
+        stop: function() {
+            this._modified = true;
         }.bind(this)
     }).resizable({
-        resize: this.rerender.bind(this)
+        resize: this.rerender.bind(this),
+        stop: function() {
+            this._modified = true;
+        }.bind(this)
     });
     this.$copyHack = $('<input>').attr({
         'type':'input',
@@ -28,22 +39,81 @@ function Note($root,keypress) {
     this.cursor = new Cursor(this);
     this.cursor.appendTo(this.$note);
     this.paragraphs = [];
-    this.createParagraph();
+    if(paragraphs) {
+        //load the paragraphs
+        var skip = true;
+        _.each(paragraphs, function(p) { 
+            this.createParagraph({
+                uid: p[0],
+                text: p[1],
+                width: style.width
+            });
+            if(skip) {
+                skip = false;
+                this.currentParagraph = 0;
+            } else { 
+                this.currentParagraph++;
+            }
+        }.bind(this));
+    } else {
+        this.createParagraph({});
+    }
     this.currentParagraph = 0;
     this.registerKeyboardListeners();
     this.registerListeners();
     this.selection = null;
     this.clickStart = {}
+    this.uid = function() {
+        return uid;
+    }
+}
+
+Note.getUID = function() { 
+    return Note.UID++;
 }
 
 Note.prototype = {
+    css: function(style) { 
+        this.$note.css(style);
+    },
+    modified: function() {
+        return this._modified;
+    },
+    _setTextModified: function() { 
+        this._textModified = true;
+    },
+    textModified: function() { 
+        return this._textModified;
+    },
+    paragraphUIDs: function() { 
+        return _.map(this.paragraphs, function(p) {
+            return p.uid();
+        })
+    },
+    clearModifiedFlag: function() {
+        this._modified = false;
+        this._textModified = false;
+        _.each(this.paragraphs, function(p) {
+            p.clearModifiedFlag();
+        });
+    },
     zindex: function(z) { 
         this.$note.css('z-index', z);
+        this._modified = true;
     },
     click: function(cb) { 
         if(this.clickCb) throw('Currently only 1 click callback supported');
         this.clickCb = cb;
         this.$note.click(cb);
+    },
+    specs: function() { 
+        return { 
+            top: this.$note.css('top'),
+            left: this.$note.css('left'),
+            width: this.$note.css('width'),
+            height: this.$note.css('height'),
+            "z-index": this.$note.css('z-index')
+        }
     },
     toggleCursor: function(show) { 
         this.cursor.toggle(show);
@@ -108,8 +178,10 @@ Note.prototype = {
     sliceParagraphs: function(start, end) { 
         return this.paragraphs.slice(start,end);
     },
-    createParagraph: function() { 
-        var par = new Paragraph();
+    createParagraph: function(extraArgs) { 
+        var par = new Paragraph($.extend({
+            note: this
+        },extraArgs));
         if(this.hasOwnProperty('currentParagraph')) {
             var i = this.currentParagraph+1;
         } else {
@@ -282,7 +354,7 @@ Note.prototype = {
         if(this.selecting()) { 
             this.deleteSelection();
         }
-        this.createParagraph();
+        this.createParagraph({});
         var parBelow = this.parBelow();
         if(!this.cursor.endOfLine()) { 
             var restOfLine = this.cursor.cutTextAfter();

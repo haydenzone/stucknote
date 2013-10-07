@@ -1,14 +1,52 @@
-function Paragraph() { 
+function Paragraph(args) { 
+    var uid = args.uid || Paragraph.generateUID();
+    this.note = args.note || Required;
     this.lines = [];
     this.currentLine = 0;
     this.$paragraph = $('<div>').attr('class','paragraph');
     this.createLine();
+    this._modified = true;
+    if(args.hasOwnProperty('text')) { 
+        this._width = parseInt(args.width);
+        this.appendText(args.text);
+        delete this.width;
+    }
+    this.uid = function() { 
+        return uid; //Private class member
+    }
 }
 
+Paragraph.generateUID = function() {
+    return Paragraph.UID++;
+};
+
 Paragraph.prototype = { 
+    width: function() { 
+        return this._width || this.note.$note.width();
+    },
     destroy: function() { 
         this.$paragraph.remove();
         this.lines = [];
+    },
+    getText: function() {
+        var text = "";
+        _.each(this.lines, function(line) { 
+            text += line.getText();
+        });
+        return text;
+    },
+    _setModified: function() { 
+        this._modified = true;
+        this.note._setTextModified();
+    },
+    modified: function() {
+        return this._modified;
+    },
+    clearModifiedFlag: function() { 
+        this._modified = false;
+        _.each(this.lines, function(line) { 
+            line.clearModifiedFlag();
+        });
     },
     obliterate: function() { 
         _.each(this.lines, function(line) { 
@@ -40,6 +78,7 @@ Paragraph.prototype = {
     },
     writeToLine: function(line, text) { 
         this.lines[line]._setText(text);
+        this.lines[line].renderText();
     },
     appendText: function(text) { 
         this.lines[this.lines.length-1].appendText(text);

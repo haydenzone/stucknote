@@ -5,6 +5,7 @@ function Line(paragraph) {
     this.$text = $('<span>').appendTo(this.$line);
     this.paddingRight = 5;
     this.registerClickHandler();
+    this.modified = true;
     this.$highlight = null;
     this.highlight = {
         start: null,
@@ -126,7 +127,7 @@ Line.prototype = {
     },
     getOverflow: function(forwardScan) { 
         if(!forwardScan) forwardScan = false;
-        var lineWidth = this.$line.width()-this.paddingRight;
+        var lineWidth = this.paragraph.width()-this.paddingRight;
         var overflow = "";
         if(forwardScan) { 
             var textWidth = 0;
@@ -190,15 +191,23 @@ Line.prototype = {
         var textWidth = Line.strWidth(this._text);
         return lineWidth-textWidth;
     },
+    _setModified: function() { 
+        this.modified = true;
+        this.paragraph._setModified();
+    },
     _setText: function(text) { 
         this._text = text; 
-        this.$text.text(text);
+        this._setModified();
     },
     appendText: function(text) { 
         this._text +=text;
+        this._setModified();
+    },
+    clearModifiedFlag: function() { 
+        this.modified = false;
     },
     getText: function() { 
-        return text;
+        return this._text;
     },
     appendTextAndRerender: function(text) {
         this.appendText(text);
