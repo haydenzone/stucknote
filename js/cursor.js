@@ -48,8 +48,8 @@ Cursor.prototype = {
         var index = 0;
         var par = this.note.curParagraph();
         for( var i = 0; i < par.lines.length; i++ ) {
-            if ( this.absolutePosition - par.lines[i].text.length > 0) {
-                this.absolutePosition -= par.lines[i].text.length;
+            if ( this.absolutePosition - par.lines[i].textLength() > 0) {
+                this.absolutePosition -= par.lines[i].textLength();
             } else { 
                 index = this.absolutePosition;
                 line = i;
@@ -64,20 +64,20 @@ Cursor.prototype = {
         this.absolutePosition = 0;
         var par = this.note.curParagraph();
         for( var i = 0; i < this.line; i++) {
-            this.absolutePosition += par.lines[i].text.length;
+            this.absolutePosition += par.lines[i].textLength();
         }
         this.absolutePosition += this.index;
     },
     endOfLine: function() { 
         var par = this.note.curParagraph();
         var line = par.lines[this.line];
-        return this.index == line.text.length;
+        return this.index == line.textLength();
     },
     cutTextAfter: function() { 
         var par = this.note.curParagraph();
         var line = par.lines[this.line];
-        var end = line.text.slice(this.index, line.text.length);
-        line.text = line.text.slice(0,this.index); 
+        var end = line.textSlice(this.index, line.textLength());
+        line.textKeepSlice(0,this.index);
         line.renderText();
         return end;
     },
@@ -137,10 +137,10 @@ Cursor.prototype = {
                 } else if(this.line > 0) {
                     var par = this.note.curParagraph();
                     var line = par.lines[this.line-1];
-                    this.index = line.text.length;
+                    this.index = line.textLength();
                     this.line--;
                 } else if(!this.note.isFirstParagraph()) {
-                    var tempindex = this.note.parAbove().lastLine().text.length-1;
+                    var tempindex = this.note.parAbove().lastLine().textLength()-1;
                     tempindex++;
                     this.moveUp();
                     this.index = tempindex;
@@ -149,7 +149,7 @@ Cursor.prototype = {
             case 'right':
                 var par = this.note.curParagraph();
                 var line = par.lines[this.line];
-                if(this.index < line.text.length) {
+                if(this.index < line.textLength()) {
                     this.index++;
                 } else if(!this.note.isLastParagraph() ||
                     this.line < par.lines.length-1) {

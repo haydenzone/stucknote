@@ -1,6 +1,6 @@
 function Line(paragraph) { 
     this.paragraph = paragraph;
-    this.text = "";
+    this._text = "";
     this.$line = $('<div>').attr('class','line');
     this.$text = $('<span>').appendTo(this.$line);
     this.paddingRight = 5;
@@ -57,9 +57,9 @@ Line.prototype = {
         return specs;
     },
     removeRange: function(start,end) {
-        var text = this.text;
-        this.text = text.slice(0,start);
-        this.text += text.slice(end,text.length);
+        var text = this._text;
+        this._text = text.slice(0,start);
+        this._text += text.slice(end,text.length);
     },
     clearHighlight: function() {
         this.$highlight.remove();
@@ -97,13 +97,13 @@ Line.prototype = {
         return this.$line.position().top;
     },
     widthToIndex: function(index) { 
-        var temp = this.text.slice(0, index);
+        var temp = this._text.slice(0, index);
         return Line.strWidth(temp);
     },
     closestIndex: function(width) { 
         var widthToHere = 0;
-        for(var i = 0; i < this.text.length; i++) { 
-            var chr = this.text[i];
+        for(var i = 0; i < this._text.length; i++) { 
+            var chr = this._text[i];
             var charWidth = Line.strWidth(chr);
             if( widthToHere + charWidth > width ) { 
                 if( Math.abs( widthToHere - width) > Math.abs( widthToHere +charWidth -width) ) {
@@ -117,7 +117,7 @@ Line.prototype = {
         return i;
     },
     renderText: function() { 
-        var textHtml = this.text;
+        var textHtml = this._text;
         textHtml = _.escape(textHtml);
         textHtml = textHtml.replace(/ /g, "&nbsp;");
         this.$text.html(textHtml);
@@ -129,17 +129,17 @@ Line.prototype = {
         if(forwardScan) { 
             var textWidth = 0;
             var i = 0;
-            while(textWidth + Line.strWidth(this.text[i]) < lineWidth && i < this.text.length) {
-                textWidth += Line.strWidth(this.text[i]);
+            while(textWidth + Line.strWidth(this._text[i]) < lineWidth && i < this._text.length) {
+                textWidth += Line.strWidth(this._text[i]);
                 i++;
             }
-            overflow = this.text.slice(i,this.text.length);
+            overflow = this._text.slice(i,this._text.length);
         } else { //backward scan
-            var textWidth = Line.strWidth(this.text);
-            var i = this.text.length - 1;
+            var textWidth = Line.strWidth(this._text);
+            var i = this._text.length - 1;
             while(textWidth > lineWidth && i >= 0) {
-                overflow = this.text[i] + overflow;
-                textWidth -= Line.strWidth(this.text[i]);
+                overflow = this._text[i] + overflow;
+                textWidth -= Line.strWidth(this._text[i]);
                 i--;
             }
         }
@@ -148,49 +148,66 @@ Line.prototype = {
     spliceOverflow: function(forwardScan) { 
         if(!forwardScan) forwardScan = false;
         var overflow = this.getOverflow(forwardScan);
-        this.text = this.text.slice(0, this.text.length-overflow.length);
+        this._text = this._text.slice(0, this._text.length-overflow.length);
         this.renderText();
         return overflow;
     },
 
+    textKeepSlice: function(start,end) { 
+        this._text = this._text.slice(start,end);
+    },
+
+    textSlice: function(start,end) { 
+        return this._text.slice(start,end);
+    },
+
     addChr: function(chr,index) { 
-        var text = this.text;
-        this.text = text.slice(0,index);
-        this.text += chr;
-        this.text +=  text.slice(index,text.length)
+        var text = this._text;
+        this._text = text.slice(0,index);
+        this._text += chr;
+        this._text +=  text.slice(index,text.length)
             this.renderText();
         return;
     },
+    textLength: function() { 
+        return this._text.length;
+    },
     removeChr: function(index) {
-        var text = this.text;
-        this.text = text.slice(0,index-1);
-        this.text +=  text.slice(index,text.length)
+        var text = this._text;
+        this._text = text.slice(0,index-1);
+        this._text +=  text.slice(index,text.length)
             this.renderText();
         return this.calculateDeficit();
     },
     calculateDeficit: function() { 
         var lineWidth = this.$line.width()-this.paddingRight;
-        var textWidth = Line.strWidth(this.text);
+        var textWidth = Line.strWidth(this._text);
         return lineWidth-textWidth;
     },
     _setText: function(text) { 
-        this.text = text; 
+        this._text = text; 
         this.$text.text(text);
     },
+    getText: function() { 
+        return text;
+    },
     appendTextAndRerender: function(text) {
-        this.text += text;
+        this._text += text;
         this.renderText();
+    },
+    appendText: function(text) { 
+        this._text +=text;
     },
     sliceFromFront: function(width) { 
         var slice = "";
         var sliceWidth = 0;
         var i = 0;
-        while(i < this.text.length && Line.strWidth(this.text[i])+sliceWidth < width) {
-            slice += this.text[i];
-            sliceWidth += Line.strWidth(this.text[i]);
+        while(i < this._text.length && Line.strWidth(this._text[i])+sliceWidth < width) {
+            slice += this._text[i];
+            sliceWidth += Line.strWidth(this._text[i]);
             i++;
         }
-        this.text = this.text.slice(slice.length, this.text.length);
+        this._text = this._text.slice(slice.length, this._text.length);
         return slice;
     }
 }

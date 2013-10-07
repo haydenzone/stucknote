@@ -230,7 +230,7 @@ Note.prototype = {
             var parAbove = this.parAbove();
             var newPos = { 
                 line: parAbove.lines.length-1,
-                index: parAbove.lines[parAbove.lines.length-1].text.length
+                index: parAbove.lines[parAbove.lines.length-1].textLength()
             };
             this.currentParagraph--;
             this.cursor.setPosition(newPos);

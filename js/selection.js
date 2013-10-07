@@ -84,11 +84,11 @@ Selection.prototype = {
                     for(var i = start.line; i < end.line+1; i++) { 
                         var line = p.lines[i];
                         if(i == start.line) {
-                            line.removeRange(start.index, line.text.length);
+                            line.removeRange(start.index, line.textLength());
                         } else if( i == end.line ) { 
                             line.removeRange(0, end.index);
                         } else {
-                            line.removeRange(0, line.text.length);
+                            line.removeRange(0, line.textLength());
                         }
                         line.renderText();
                     }
@@ -97,9 +97,9 @@ Selection.prototype = {
                 for(var i = start.line; i < p.lines.length; i++) { 
                     var line = p.lines[i];
                     if(i == start.line) {
-                        line.removeRange(start.index, line.text.length);
+                        line.removeRange(start.index, line.textLength());
                     } else {
-                        line.removeRange(0, line.text.length);
+                        line.removeRange(0, line.textLength());
                     }
                     line.renderText();
                 }
@@ -109,7 +109,7 @@ Selection.prototype = {
                     if(i == end.line) {
                         line.removeRange(0, end.index);
                     } else {
-                        line.removeRange(0, line.text.length);
+                        line.removeRange(0, line.textLength());
                     }
                     line.renderText();
                 }
@@ -151,15 +151,15 @@ Selection.prototype = {
         var start = r[1];
         var end = r[2];
         if(r[0].length == 1) {
-            text += r[0][0].text.slice(start.index, end.index);
+            text += r[0][0].textSlice(start.index, end.index);
         } else {
             _.each(r[0], function(line) { 
                 if(i == 0) { 
-                    text += line.text.slice(start.index, line.text.length);
+                    text += line.textSlice(start.index, line.textLength());
                 } else if( i == r[0].length-1) {
-                    text += line.text.slice(0, end.index);
+                    text += line.textSlice(0, end.index);
                 } else {
-                    text += line.text;
+                    text += line.getText();
                 }
                 if(line.hasOwnProperty('last')) {
                     if(i < r[0].length-1) {
@@ -216,9 +216,9 @@ Selection.prototype = {
             var lastLine = lines[lines.length-1];
             lines.splice(0,1);
             lines.splice(lines.length-1,1);
-            firstLine.highlightRange(start.index, firstLine.text.length);
+            firstLine.highlightRange(start.index, firstLine.textLength());
             _.each(lines, function(line) { 
-                line.highlightRange(0, line.text.length);
+                line.highlightRange(0, line.textLength());
             });
             lastLine.highlightRange(0, end.index);
         }

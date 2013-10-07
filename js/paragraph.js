@@ -42,7 +42,7 @@ Paragraph.prototype = {
         this.lines[line]._setText(text);
     },
     appendText: function(text) { 
-        this.lines[this.lines.length-1].text += text;
+        this.lines[this.lines.length-1].appendText(text);
         this.pushforwardLinesAfter(this.lines.length-1,true);
     },
     rerenderParagraph: function() { 
@@ -61,9 +61,9 @@ Paragraph.prototype = {
         var line_i = line;
         if(this.lines.length > line + 1) {
             var slice = this.lines[line_i+1].sliceFromFront(deficit);
-            while(slice != "" || this.lines[line_i+1].text.length == 0) { 
+            while(slice != "" || this.lines[line_i+1].textLength() == 0) { 
                 this.lines[line_i].appendTextAndRerender(slice);
-                while(this.lines[line_i].calculateDeficit() > 0 && this.lines[line_i+1].text.length == 0) {
+                while(this.lines[line_i].calculateDeficit() > 0 && this.lines[line_i+1].textLength() == 0) {
                     var deficit = this.lines[line_i].calculateDeficit();
                     this.removeLine(line_i+1);
                     if(line_i + 1 >= this.lines.length) break;
@@ -102,7 +102,7 @@ Paragraph.prototype = {
         }
         if( index == 0 ) {
             line--;
-            index = this.lines[line].text.length;
+            index = this.lines[line].textLength();
         }
         if(line < 0) { 
             console.log('todo: deal with combining paragraphs');
@@ -124,7 +124,7 @@ Paragraph.prototype = {
     },
     _clearTrailingBlankLines: function(line) { 
         line_i = this.lines.length-1;
-        while(this.lines[line_i].text == "" && line_i > line) {
+        while(this.lines[line_i].textLength() == 0 && line_i > line) {
             this.removeLine(line_i);
             line_i--;
         }
@@ -134,7 +134,7 @@ Paragraph.prototype = {
             throw "Paragraph does not have that line";
         }
         var endOfLine = false;
-        if(this.lines[line].text.length <= index) {
+        if(this.lines[line].textLength() <= index) {
             endOfLine = true;
         }
         this.lines[line].addChr(chr,index);
