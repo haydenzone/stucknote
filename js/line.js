@@ -58,8 +58,10 @@ Line.prototype = {
     },
     removeRange: function(start,end) {
         var text = this._text;
-        this._text = text.slice(0,start);
-        this._text += text.slice(end,text.length);
+        var newText = ""
+        newText = text.slice(0,start);
+        newText += text.slice(end,text.length);
+        this._setText(newText);
     },
     clearHighlight: function() {
         this.$highlight.remove();
@@ -148,13 +150,13 @@ Line.prototype = {
     spliceOverflow: function(forwardScan) { 
         if(!forwardScan) forwardScan = false;
         var overflow = this.getOverflow(forwardScan);
-        this._text = this._text.slice(0, this._text.length-overflow.length);
+        this._setText(this._text.slice(0, this._text.length-overflow.length));
         this.renderText();
         return overflow;
     },
 
     textKeepSlice: function(start,end) { 
-        this._text = this._text.slice(start,end);
+        this._setText(this._text.slice(start,end));
     },
 
     textSlice: function(start,end) { 
@@ -163,10 +165,12 @@ Line.prototype = {
 
     addChr: function(chr,index) { 
         var text = this._text;
-        this._text = text.slice(0,index);
-        this._text += chr;
-        this._text +=  text.slice(index,text.length)
-            this.renderText();
+        var newText = ""
+        newText = text.slice(0,index);
+        newText += chr;
+        newText +=  text.slice(index,text.length)
+        this._setText(newText);
+        this.renderText();
         return;
     },
     textLength: function() { 
@@ -174,9 +178,11 @@ Line.prototype = {
     },
     removeChr: function(index) {
         var text = this._text;
-        this._text = text.slice(0,index-1);
-        this._text +=  text.slice(index,text.length)
-            this.renderText();
+        var newText = "";
+        newText = text.slice(0,index-1);
+        newText +=  text.slice(index,text.length)
+        this._setText(newText);
+        this.renderText();
         return this.calculateDeficit();
     },
     calculateDeficit: function() { 
@@ -188,15 +194,15 @@ Line.prototype = {
         this._text = text; 
         this.$text.text(text);
     },
+    appendText: function(text) { 
+        this._text +=text;
+    },
     getText: function() { 
         return text;
     },
     appendTextAndRerender: function(text) {
-        this._text += text;
+        this.appendText(text);
         this.renderText();
-    },
-    appendText: function(text) { 
-        this._text +=text;
     },
     sliceFromFront: function(width) { 
         var slice = "";
@@ -207,7 +213,7 @@ Line.prototype = {
             sliceWidth += Line.strWidth(this._text[i]);
             i++;
         }
-        this._text = this._text.slice(slice.length, this._text.length);
+        this._setText(this._text.slice(slice.length, this._text.length));
         return slice;
     }
 }
