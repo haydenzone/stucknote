@@ -14,7 +14,7 @@ function Paragraph(args) {
     if(args.hasOwnProperty('text')) { 
         this._width = parseInt(args.width);
         this.appendText(args.text);
-        delete this.width;
+        delete this._width;
     }
     this.uid = function() { 
         return uid; //Private class member

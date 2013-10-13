@@ -28,6 +28,7 @@ function Note(args) {
         }.bind(this)
     }).resizable({
         resize: this.rerender.bind(this),
+        minWidth: 30,
         stop: function() {
             this._modified = true;
         }.bind(this)
