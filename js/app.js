@@ -6,10 +6,22 @@ function App(root) {
 	Paragraph.UID = 0;
 	Note.UID = 0;
 	var storedData = this.readLocalStorage();
+	this.z = 0;
 	if(storedData) { 
 		_.each(storedData, function(note, uid) { 
+			uid = parseInt(uid);
+			if(uid >= Note.UID) { 
+				Note.UID = uid+1;
+			}
+			var highestPUID = _.chain(note.paragraphs).pluck(0).max().value(); 
+			if( highestPUID >= Paragraph.UID) { 
+				Paragraph.UID = highestPUID + 1;
+			}
+			if(note.specs['z-index'] > this.z) {
+				this.z = note.specs['z-index']+1;
+			}
 			this.newNote({
-				uid: parseInt(uid),
+				uid: uid,
 				paragraphs: note.paragraphs,
 				style: note.specs
 			});
@@ -19,7 +31,6 @@ function App(root) {
 		this.newNote();
 	}
 	//TODO: minify zindexes and apply
-	this.z = 0;
 	setInterval(this.printModifiedParagraphs.bind(this), 5000);
 }
 
@@ -97,7 +108,6 @@ App.prototype = {
 	},
 	printModifiedParagraphs: function() { 
 		//Check for modified paragraphs
-		console.log('checking');
 		localStorage.notes = JSON.stringify(_.map(this.notes, function(note) {
 			return note.uid();
 		}));

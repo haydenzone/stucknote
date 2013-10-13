@@ -1,5 +1,10 @@
 function Paragraph(args) { 
-    var uid = args.uid || Paragraph.generateUID();
+    var uid;
+    if(args.hasOwnProperty('uid')) { 
+        uid = args.uid;
+    } else {
+        uid = Paragraph.generateUID();
+    }
     this.note = args.note || Required;
     this.lines = [];
     this.currentLine = 0;

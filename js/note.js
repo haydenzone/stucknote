@@ -2,7 +2,12 @@ function Note(args) {
     this.$note = $('<div>').appendTo(args.$root);
     this.keyPress = args.keyPress;
     var paragraphs = args.paragraphs || null;
-    var uid = args.uid || Note.getUID();
+    var uid;
+    if(args.hasOwnProperty('uid')) { 
+        uid = args.uid;
+    } else {
+        uid = Note.getUID();
+    }
     var style = args.style || {};
     this.css(style);
     this.$note.append($("<div>").css({
