@@ -1,5 +1,7 @@
 function Note(args) { 
     this.$note = $('<div>').appendTo(args.$root);
+    this.$closeButton = $('<img>').attr('src', 'img/x.png').addClass('close').click(this.close.bind(this));
+    this.$note.append(this.$closeButton);
     this.keyPress = args.keyPress;
     var paragraphs = args.paragraphs || null;
     var uid;
@@ -79,6 +81,19 @@ Note.getUID = function() {
 }
 
 Note.prototype = {
+    onClose: function(f) { 
+        this.closeCb = f;
+    },
+    close: function() { 
+        this.destroy();
+        if(_.has(this,'closeCb')) this.closeCb();
+    },
+    destroy: function() { 
+        _.each(this.paragraphs, function(p) {
+            p.destroy();
+        });
+        this.$note.remove();
+    },
     css: function(style) { 
         this.$note.css(style);
     },

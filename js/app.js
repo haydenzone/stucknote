@@ -66,6 +66,7 @@ App.prototype = {
 		this.notes[note.uid()] = note;
 		this.currentNote = note.uid();
 		this.notes[this.currentNote].click(this.selectNote.bind(this, this.notes[this.currentNote]));
+		this.notes[this.currentNote].onClose(this.queueRemoval.bind(this, note.uid()));
 		if(!_.has(extraArgs, 'style') || !_.has(extraArgs.style, 'z-index')){
 			this.notes[this.currentNote].zindex(this.z++);
 		}
@@ -85,6 +86,9 @@ App.prototype = {
 	},
 	removeParagraphs: function(uid) { 
 		localStorage.removeItem('paragraph/'+uid);
+	},
+	queueRemoval: function(uid) { 
+		delete this.notes[uid];
 	},
 	removeNote: function(uid) { 
 		console.log('removing', uid);
